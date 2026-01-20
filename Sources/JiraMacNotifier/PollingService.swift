@@ -63,7 +63,7 @@ class PollingService: ObservableObject {
             timers[instance.id] = timer
 
             // Poll immediately on start
-            Task {
+            Task { @MainActor in
                 await pollInstance(instance)
             }
         }
