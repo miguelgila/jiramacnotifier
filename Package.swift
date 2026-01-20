@@ -21,12 +21,18 @@ let package = Package(
             dependencies: [
                 .product(name: "SQLite", package: "SQLite.swift")
             ],
-            path: "Sources/JiraMacNotifier"
+            path: "Sources/JiraMacNotifier",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
         ),
         .testTarget(
             name: "JiraMacNotifierTests",
             dependencies: ["JiraMacNotifier"],
-            path: "Tests/JiraMacNotifierTests"
+            path: "Tests/JiraMacNotifierTests",
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
         )
     ]
 )
