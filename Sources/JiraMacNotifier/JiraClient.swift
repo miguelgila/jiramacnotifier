@@ -9,7 +9,7 @@ enum JiraClientError: Error {
     case networkError(Error)
 }
 
-final class JiraClient {
+final class JiraClient: @unchecked Sendable {
     private let session: URLSession
     private let keychainManager: KeychainManager
 

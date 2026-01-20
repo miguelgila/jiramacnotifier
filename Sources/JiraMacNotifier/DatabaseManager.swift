@@ -1,7 +1,7 @@
 import Foundation
 import SQLite
 
-final class DatabaseManager {
+final class DatabaseManager: @unchecked Sendable {
     private var db: Connection?
     private let issueStates = Table("issue_states")
 

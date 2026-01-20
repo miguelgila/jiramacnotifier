@@ -8,7 +8,7 @@ enum KeychainError: Error {
     case unexpectedStatus(OSStatus)
 }
 
-final class KeychainManager {
+final class KeychainManager: @unchecked Sendable {
     static let shared = KeychainManager()
     private let service = "com.jiramacnotifier.tokens"
 
