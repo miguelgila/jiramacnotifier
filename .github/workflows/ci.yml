@@ -19,14 +19,19 @@ jobs:
       run: swift --version
 
     - name: Resolve dependencies
-      run: swift package resolve
+      run: |
+        swift package resolve
+        echo "✓ Dependencies resolved"
 
     - name: Build
-      run: swift build -v
+      run: |
+        swift build -v
+        echo "✓ Build completed"
 
     - name: Run tests with coverage
       run: |
-        swift test --enable-code-coverage
+        swift test --enable-code-coverage -v
+        echo "✓ Tests completed"
 
     - name: Generate coverage report
       continue-on-error: true
