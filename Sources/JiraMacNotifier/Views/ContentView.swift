@@ -43,7 +43,7 @@ struct ContentView: View {
 
                     if pollingService.isRunning {
                         Button(action: {
-                            Task {
+                            Task { @MainActor in
                                 await pollingService.pollNow()
                             }
                         }) {
