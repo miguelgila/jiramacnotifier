@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 @main
 struct JiraMacNotifierApp: App {
