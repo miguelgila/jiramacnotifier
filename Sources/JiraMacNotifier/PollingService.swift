@@ -60,6 +60,7 @@ final class PollingService: ObservableObject {
                 }
             }
 
+            RunLoop.main.add(timer, forMode: .common)
             timers[instance.id] = timer
 
             // Poll immediately on start
