@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Configuration Models
 
-struct JiraInstance: Codable, Identifiable, Equatable {
+struct JiraInstance: Codable, Identifiable, Equatable, Sendable {
     var id: UUID
     var name: String
     var url: String
@@ -22,7 +22,7 @@ struct JiraInstance: Codable, Identifiable, Equatable {
     }
 }
 
-struct JiraFilter: Codable, Identifiable, Equatable {
+struct JiraFilter: Codable, Identifiable, Equatable, Sendable {
     var id: UUID
     var name: String
     var jql: String
@@ -38,20 +38,20 @@ struct JiraFilter: Codable, Identifiable, Equatable {
 
 // MARK: - Jira API Models
 
-struct JiraSearchResponse: Codable {
+struct JiraSearchResponse: Codable, Sendable {
     let startAt: Int
     let maxResults: Int
     let total: Int
     let issues: [JiraIssue]
 }
 
-struct JiraIssue: Codable {
+struct JiraIssue: Codable, Sendable {
     let id: String
     let key: String
     let fields: JiraIssueFields
 }
 
-struct JiraIssueFields: Codable {
+struct JiraIssueFields: Codable, Sendable {
     let summary: String
     let status: JiraStatus
     let updated: String
@@ -60,21 +60,21 @@ struct JiraIssueFields: Codable {
     let priority: JiraPriority?
 }
 
-struct JiraStatus: Codable {
+struct JiraStatus: Codable, Sendable {
     let name: String
 }
 
-struct JiraUser: Codable {
+struct JiraUser: Codable, Sendable {
     let displayName: String
 }
 
-struct JiraPriority: Codable {
+struct JiraPriority: Codable, Sendable {
     let name: String
 }
 
 // MARK: - Persistence Models
 
-struct IssueState: Equatable {
+struct IssueState: Equatable, Sendable {
     let issueId: String
     let issueKey: String
     let instanceId: UUID
