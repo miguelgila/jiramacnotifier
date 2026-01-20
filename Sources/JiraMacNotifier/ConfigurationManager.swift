@@ -1,7 +1,7 @@
 import Foundation
 import Combine
 
-class ConfigurationManager: ObservableObject {
+final class ConfigurationManager: ObservableObject {
     @Published var instances: [JiraInstance] = []
 
     private let configFileURL: URL

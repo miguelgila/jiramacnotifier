@@ -9,7 +9,7 @@ enum JiraClientError: Error {
     case networkError(Error)
 }
 
-class JiraClient {
+final class JiraClient {
     private let session: URLSession
     private let keychainManager: KeychainManager
 

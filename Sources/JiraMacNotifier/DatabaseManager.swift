@@ -1,7 +1,7 @@
 import Foundation
 import SQLite
 
-class DatabaseManager {
+final class DatabaseManager {
     private var db: Connection?
     private let issueStates = Table("issue_states")
 

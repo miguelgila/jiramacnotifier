@@ -2,7 +2,7 @@ import Foundation
 import Combine
 
 @MainActor
-class PollingService: ObservableObject {
+final class PollingService: ObservableObject {
     @Published var isRunning = false
     @Published var lastPollTime: Date?
     @Published var errorMessage: String?

@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-class NotificationService {
+final class NotificationService {
     static let shared = NotificationService()
 
     private init() {
