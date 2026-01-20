@@ -9,14 +9,11 @@ on:
 jobs:
   test:
     name: Test and Coverage
-    runs-on: macos-13
+    runs-on: macos-15
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Select Xcode version
-      run: sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
 
     - name: Display Swift version
       run: swift --version
@@ -67,7 +64,7 @@ jobs:
 
   lint:
     name: SwiftLint
-    runs-on: macos-13
+    runs-on: macos-15
 
     steps:
     - name: Checkout code
@@ -82,15 +79,12 @@ jobs:
 
   build-app:
     name: Build Application Bundle
-    runs-on: macos-13
+    runs-on: macos-15
     needs: [test, lint]
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Select Xcode version
-      run: sudo xcode-select -s /Applications/Xcode_15.0.app/Contents/Developer
 
     - name: Build release
       run: swift build -c release
