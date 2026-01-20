@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var configManager = ConfigurationManager()
+    @StateObject private var configManager: ConfigurationManager
     @StateObject private var pollingService: PollingService
 
     @State private var showingAddInstance = false
