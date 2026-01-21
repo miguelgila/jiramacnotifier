@@ -164,7 +164,7 @@ jobs:
         zip -r JiraMacNotifier.zip JiraMacNotifier.app
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: JiraMacNotifier
         path: JiraMacNotifier.zip
