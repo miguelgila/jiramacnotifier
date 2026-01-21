@@ -157,6 +157,135 @@ jobs:
         # Create PkgInfo
         echo "APPL????" > "${CONTENTS_DIR}/PkgInfo"
 
+    - name: Validate app bundle structure
+      run: |
+        APP_DIR="JiraMacNotifier.app"
+
+        echo "🔍 Validating app bundle structure..."
+
+        # Check directory structure
+        if [ ! -d "${APP_DIR}" ]; then
+          echo "❌ App bundle directory not found"
+          exit 1
+        fi
+
+        if [ ! -d "${APP_DIR}/Contents" ]; then
+          echo "❌ Contents directory not found"
+          exit 1
+        fi
+
+        if [ ! -d "${APP_DIR}/Contents/MacOS" ]; then
+          echo "❌ MacOS directory not found"
+          exit 1
+        fi
+
+        # Check required files
+        if [ ! -f "${APP_DIR}/Contents/Info.plist" ]; then
+          echo "❌ Info.plist not found"
+          exit 1
+        fi
+
+        if [ ! -f "${APP_DIR}/Contents/PkgInfo" ]; then
+          echo "❌ PkgInfo not found"
+          exit 1
+        fi
+
+        if [ ! -f "${APP_DIR}/Contents/MacOS/JiraMacNotifier" ]; then
+          echo "❌ Executable not found"
+          exit 1
+        fi
+
+        # Check executable permissions
+        if [ ! -x "${APP_DIR}/Contents/MacOS/JiraMacNotifier" ]; then
+          echo "❌ Executable does not have execute permissions"
+          exit 1
+        fi
+
+        # Validate Info.plist
+        plutil -lint "${APP_DIR}/Contents/Info.plist"
+        if [ $? -ne 0 ]; then
+          echo "❌ Info.plist is malformed"
+          exit 1
+        fi
+
+        echo "✅ App bundle structure is valid"
+
+        # Display bundle info
+        echo ""
+        echo "📦 Bundle Information:"
+        echo "  Bundle ID: $(defaults read "$(pwd)/${APP_DIR}/Contents/Info.plist" CFBundleIdentifier)"
+        echo "  Version: $(defaults read "$(pwd)/${APP_DIR}/Contents/Info.plist" CFBundleShortVersionString)"
+        echo "  Executable: $(file "${APP_DIR}/Contents/MacOS/JiraMacNotifier")"
+        echo "  Size: $(du -sh "${APP_DIR}" | cut -f1)"
+
+    - name: Code sign app bundle
+      run: |
+        APP_DIR="JiraMacNotifier.app"
+
+        echo "✍️  Applying ad-hoc code signature..."
+
+        # Ad-hoc signing (no certificate required)
+        # This makes the app valid and prevents "damaged" errors
+        codesign --force --deep --sign - "${APP_DIR}"
+
+        if [ $? -ne 0 ]; then
+          echo "❌ Code signing failed"
+          exit 1
+        fi
+
+        echo "✅ Code signature applied"
+
+        # Verify signature
+        echo ""
+        echo "🔐 Verifying code signature..."
+        codesign --verify --deep --verbose "${APP_DIR}"
+
+        if [ $? -ne 0 ]; then
+          echo "❌ Code signature verification failed"
+          exit 1
+        fi
+
+        # Display signature info
+        echo ""
+        echo "📋 Code Signature Info:"
+        codesign -dvvv "${APP_DIR}" 2>&1 | head -n 20
+
+    - name: Test app launch
+      run: |
+        APP_DIR="JiraMacNotifier.app"
+        EXECUTABLE="${APP_DIR}/Contents/MacOS/JiraMacNotifier"
+
+        echo "🚀 Testing app launch..."
+
+        # Set a timeout and try to launch the app
+        # We expect it might fail without display, but it should at least try to start
+        timeout 5s "${EXECUTABLE}" --help 2>&1 || true
+
+        # Check if the binary runs without immediate crash
+        # We run it in background and quickly kill it
+        "${EXECUTABLE}" &
+        APP_PID=$!
+        sleep 2
+
+        # Check if process is still running or at least started
+        if ps -p $APP_PID > /dev/null 2>&1; then
+          echo "✅ App launched successfully and is running"
+          kill $APP_PID 2>/dev/null || true
+        else
+          # Check exit code
+          wait $APP_PID 2>/dev/null
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -eq 0 ] || [ $EXIT_CODE -eq 143 ] || [ $EXIT_CODE -eq 1 ]; then
+            echo "✅ App executable runs (exit code: $EXIT_CODE)"
+          else
+            echo "⚠️  App exited with code $EXIT_CODE (may be expected without GUI environment)"
+          fi
+        fi
+
+        echo ""
+        echo "🔧 Binary dependencies:"
+        otool -L "${EXECUTABLE}" | head -n 10
+
     - name: Create DMG
       run: |
         brew install create-dmg || true

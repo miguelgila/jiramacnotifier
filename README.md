@@ -25,7 +25,12 @@ A lightweight, native macOS application that provides desktop notifications for 
 1. Download the latest `JiraMacNotifier.zip` from the [Releases](https://github.com/yourusername/jiramacnotifier/releases) page
 2. Extract the ZIP file
 3. Drag `JiraMacNotifier.app` to your Applications folder
-4. Launch the app
+4. **First Launch**: Since the app is not notarized, you'll need to bypass Gatekeeper:
+   - Right-click (or Control-click) on `JiraMacNotifier.app`
+   - Select "Open" from the context menu
+   - Click "Open" in the security dialog
+   - Alternatively, remove the quarantine attribute: `xattr -d com.apple.quarantine JiraMacNotifier.app`
+5. Grant notification permissions when prompted
 
 ### Building from Source
 
@@ -151,6 +156,27 @@ The project uses GitHub Actions for continuous integration:
 - Tokens are only accessible to the app that created them
 
 ## Troubleshooting
+
+### "App is Damaged" Error
+
+If macOS says the app is damaged and can't be opened:
+
+1. **Remove quarantine attribute** (recommended):
+   ```bash
+   xattr -d com.apple.quarantine /Applications/JiraMacNotifier.app
+   ```
+
+2. **Use right-click to open**:
+   - Right-click (or Control-click) on the app
+   - Select "Open" from the menu
+   - Click "Open" in the dialog
+
+3. **Check System Settings**:
+   - Go to System Settings → Privacy & Security
+   - Look for a message about JiraMacNotifier being blocked
+   - Click "Open Anyway"
+
+This is normal for apps that are not notarized through Apple's developer program. The app is code-signed and safe to run.
 
 ### Notifications Not Appearing
 
