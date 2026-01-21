@@ -89,3 +89,54 @@ struct IssueState: Equatable, Sendable {
         return updatedAt > lastNotified
     }
 }
+
+// MARK: - Status Tracking Models
+
+struct InstancePollStatus: Identifiable, Equatable, Sendable {
+    let id: UUID
+    let instanceId: UUID
+    let instanceName: String
+    let lastPollTime: Date?
+    let nextPollTime: Date?
+    let isPolling: Bool
+    let hasChanges: Bool
+    let changeCount: Int
+    let errorMessage: String?
+}
+
+struct FilterPollStatus: Identifiable, Equatable, Sendable {
+    let id: UUID
+    let filterId: UUID
+    let filterName: String
+    let issueCount: Int
+    let newIssueCount: Int
+    let updatedIssueCount: Int
+    let lastPollTime: Date?
+}
+
+// MARK: - Logging Models
+
+enum LogLevel: String, Codable, Sendable {
+    case debug = "DEBUG"
+    case info = "INFO"
+    case warning = "WARNING"
+    case error = "ERROR"
+}
+
+struct LogEntry: Identifiable, Codable, Equatable, Sendable {
+    let id: UUID
+    let timestamp: Date
+    let level: LogLevel
+    let message: String
+    let instanceId: UUID?
+    let filterId: UUID?
+
+    init(id: UUID = UUID(), timestamp: Date = Date(), level: LogLevel, message: String, instanceId: UUID? = nil, filterId: UUID? = nil) {
+        self.id = id
+        self.timestamp = timestamp
+        self.level = level
+        self.message = message
+        self.instanceId = instanceId
+        self.filterId = filterId
+    }
+}

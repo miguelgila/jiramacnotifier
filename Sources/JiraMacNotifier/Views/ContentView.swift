@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var pollingService: PollingService
 
     @State private var showingAddInstance = false
+    @State private var showingLogViewer = false
     @State private var selectedInstance: JiraInstance?
 
     init() {
@@ -19,8 +20,11 @@ struct ContentView: View {
             List(selection: $selectedInstance) {
                 Section(header: Text("Jira Instances")) {
                     ForEach(configManager.instances) { instance in
-                        InstanceRow(instance: instance)
-                            .tag(instance)
+                        InstanceRow(
+                            instance: instance,
+                            status: pollingService.pollStatuses[instance.id]
+                        )
+                        .tag(instance)
                     }
                     .onDelete(perform: deleteInstances)
                 }
@@ -31,6 +35,8 @@ struct ContentView: View {
                     Button(action: { showingAddInstance = true }) {
                         Label("Add Instance", systemImage: "plus")
                     }
+
+                    Divider()
 
                     Button(action: {
                         pollingService.isRunning ? pollingService.stop() : pollingService.start()
@@ -50,6 +56,12 @@ struct ContentView: View {
                             Label("Poll Now", systemImage: "arrow.clockwise")
                         }
                     }
+
+                    Divider()
+
+                    Button(action: { showingLogViewer = true }) {
+                        Label("View Logs", systemImage: "doc.text.magnifyingglass")
+                    }
                 }
             }
         } detail: {
@@ -66,6 +78,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingAddInstance) {
             AddInstanceView(configManager: configManager, pollingService: pollingService)
+        }
+        .sheet(isPresented: $showingLogViewer) {
+            LogViewerView()
         }
         .frame(minWidth: 800, minHeight: 600)
         .onAppear {
@@ -91,25 +106,110 @@ struct ContentView: View {
 
 struct InstanceRow: View {
     let instance: JiraInstance
+    let status: InstancePollStatus?
 
     var body: some View {
-        HStack {
-            Image(systemName: instance.isEnabled ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(instance.isEnabled ? .green : .gray)
+        HStack(spacing: 12) {
+            // Status icon
+            ZStack {
+                Circle()
+                    .fill(statusColor.opacity(0.2))
+                    .frame(width: 32, height: 32)
 
-            VStack(alignment: .leading) {
+                Image(systemName: statusIcon)
+                    .foregroundColor(statusColor)
+                    .font(.system(size: 14, weight: .semibold))
+            }
+
+            // Instance info
+            VStack(alignment: .leading, spacing: 4) {
                 Text(instance.name)
                     .font(.headline)
-                Text(instance.url)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+
+                HStack(spacing: 8) {
+                    Text(instance.url)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    if let lastPoll = status?.lastPollTime {
+                        Text("•")
+                            .foregroundColor(.secondary)
+                        Text(timeAgo(lastPoll))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
 
             Spacer()
 
-            Text("\(instance.filters.count) filters")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            // Status indicators
+            VStack(alignment: .trailing, spacing: 4) {
+                if let status = status, status.hasChanges {
+                    HStack(spacing: 4) {
+                        Image(systemName: "bell.badge.fill")
+                            .foregroundColor(.orange)
+                        Text("\(status.changeCount)")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.orange)
+                    }
+                }
+
+                Text("\(instance.filters.count) filters")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                if let error = status?.errorMessage {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                        .help(error)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var statusColor: Color {
+        if let status = status {
+            if let _ = status.errorMessage {
+                return .red
+            } else if status.isPolling {
+                return .blue
+            } else if status.hasChanges {
+                return .orange
+            } else if instance.isEnabled {
+                return .green
+            }
+        }
+        return instance.isEnabled ? .gray : .gray.opacity(0.5)
+    }
+
+    private var statusIcon: String {
+        if let status = status {
+            if let _ = status.errorMessage {
+                return "xmark"
+            } else if status.isPolling {
+                return "arrow.clockwise"
+            } else if status.hasChanges {
+                return "bell.fill"
+            } else if instance.isEnabled {
+                return "checkmark"
+            }
+        }
+        return instance.isEnabled ? "pause" : "circle"
+    }
+
+    private func timeAgo(_ date: Date) -> String {
+        let seconds = Int(Date().timeIntervalSince(date))
+        if seconds < 60 {
+            return "just now"
+        } else if seconds < 3600 {
+            let minutes = seconds / 60
+            return "\(minutes)m ago"
+        } else {
+            let hours = seconds / 3600
+            return "\(hours)h ago"
         }
     }
 }

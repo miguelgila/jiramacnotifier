@@ -108,6 +108,20 @@ jobs:
     - name: Build release
       run: swift build -c release
 
+    - name: Generate app icon
+      run: |
+        echo "🎨 Generating app icon..."
+        chmod +x scripts/generate-icon.swift
+        swift scripts/generate-icon.swift
+
+        # Convert iconset to icns
+        if [ -d "AppIcon.iconset" ]; then
+          iconutil -c icns AppIcon.iconset -o AppIcon.icns
+          echo "✅ App icon generated"
+        else
+          echo "⚠️  Failed to generate icon, continuing without it"
+        fi
+
     - name: Create app bundle structure
       run: |
         APP_NAME="JiraMacNotifier"
@@ -122,6 +136,12 @@ jobs:
         # Copy binary
         cp .build/release/JiraMacNotifier "${MACOS_DIR}/"
 
+        # Copy icon if it exists
+        if [ -f "AppIcon.icns" ]; then
+          cp AppIcon.icns "${RESOURCES_DIR}/"
+          echo "✅ App icon copied to bundle"
+        fi
+
         # Create Info.plist
         cat > "${CONTENTS_DIR}/Info.plist" << EOF
         <?xml version="1.0" encoding="UTF-8"?>
@@ -134,6 +154,8 @@ jobs:
             <string>JiraMacNotifier</string>
             <key>CFBundleIdentifier</key>
             <string>com.jiramacnotifier</string>
+            <key>CFBundleIconFile</key>
+            <string>AppIcon</string>
             <key>CFBundleInfoDictionaryVersion</key>
             <string>6.0</string>
             <key>CFBundleName</key>
