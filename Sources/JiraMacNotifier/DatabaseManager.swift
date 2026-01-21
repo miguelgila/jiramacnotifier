@@ -90,11 +90,17 @@ final class DatabaseManager: @unchecked Sendable {
             return nil
         }
 
+        // Safely unwrap UUIDs - return nil if invalid
+        guard let instanceUUID = UUID(uuidString: row[self.instanceId]),
+              let filterUUID = UUID(uuidString: row[self.filterId]) else {
+            return nil
+        }
+
         return IssueState(
             issueId: row[self.issueId],
             issueKey: row[self.issueKey],
-            instanceId: UUID(uuidString: row[self.instanceId])!,
-            filterId: UUID(uuidString: row[self.filterId])!,
+            instanceId: instanceUUID,
+            filterId: filterUUID,
             summary: row[self.summary],
             status: row[self.status],
             updatedAt: row[self.updatedAt],
@@ -135,11 +141,17 @@ final class DatabaseManager: @unchecked Sendable {
         var states: [IssueState] = []
 
         for row in try db.prepare(issueStates.order(updatedAt.desc)) {
+            // Safely unwrap UUIDs - skip rows with invalid data
+            guard let instanceUUID = UUID(uuidString: row[instanceId]),
+                  let filterUUID = UUID(uuidString: row[filterId]) else {
+                continue // Skip invalid row
+            }
+
             let state = IssueState(
                 issueId: row[issueId],
                 issueKey: row[issueKey],
-                instanceId: UUID(uuidString: row[instanceId])!,
-                filterId: UUID(uuidString: row[filterId])!,
+                instanceId: instanceUUID,
+                filterId: filterUUID,
                 summary: row[summary],
                 status: row[status],
                 updatedAt: row[updatedAt],
