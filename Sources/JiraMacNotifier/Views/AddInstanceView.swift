@@ -18,9 +18,7 @@ struct AddInstanceView: View {
                 Section(header: Text("Instance Details")) {
                     TextField("Name (e.g., Work Jira)", text: $name)
                     TextField("URL (e.g., https://your-domain.atlassian.net)", text: $url)
-                        .autocapitalization(.none)
                     TextField("Username/Email", text: $username)
-                        .autocapitalization(.none)
                     SecureField("API Token", text: $token)
 
                     Stepper("Poll Interval: \(pollIntervalMinutes) minutes",
