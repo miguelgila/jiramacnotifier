@@ -17,12 +17,14 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedInstance) {
-                Section("Jira Instances") {
+                Section {
                     ForEach(configManager.instances) { instance in
                         InstanceRow(instance: instance)
                             .tag(instance)
                     }
                     .onDelete(perform: deleteInstances)
+                } header: {
+                    Text("Jira Instances")
                 }
             }
             .navigationTitle("Jira Notifier")

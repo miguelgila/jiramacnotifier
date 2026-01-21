@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Configuration Models
 
-struct JiraInstance: Codable, Identifiable, Equatable, Sendable {
+struct JiraInstance: Codable, Identifiable, Equatable, Hashable, Sendable {
     var id: UUID
     var name: String
     var url: String
@@ -22,7 +22,7 @@ struct JiraInstance: Codable, Identifiable, Equatable, Sendable {
     }
 }
 
-struct JiraFilter: Codable, Identifiable, Equatable, Sendable {
+struct JiraFilter: Codable, Identifiable, Equatable, Hashable, Sendable {
     var id: UUID
     var name: String
     var jql: String

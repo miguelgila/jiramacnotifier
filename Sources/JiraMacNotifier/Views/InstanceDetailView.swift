@@ -12,7 +12,7 @@ struct InstanceDetailView: View {
 
     var body: some View {
         Form {
-            Section("Instance Configuration") {
+            Section {
                 Toggle("Enabled", isOn: $instance.isEnabled)
                     .onChange(of: instance.isEnabled) { _ in
                         saveAndRestart()
@@ -55,9 +55,11 @@ struct InstanceDetailView: View {
                             .foregroundColor(status.contains("Success") ? .green : .red)
                     }
                 }
+            } header: {
+                Text("Instance Configuration")
             }
 
-            Section("Filters") {
+            Section {
                 List {
                     ForEach($instance.filters) { $filter in
                         FilterRow(filter: $filter)
@@ -71,6 +73,8 @@ struct InstanceDetailView: View {
                 Button(action: { showingAddFilter = true }) {
                     Label("Add Filter", systemImage: "plus")
                 }
+            } header: {
+                Text("Filters")
             }
         }
         .formStyle(.grouped)
