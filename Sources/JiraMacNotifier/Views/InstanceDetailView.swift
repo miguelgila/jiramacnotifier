@@ -62,7 +62,7 @@ struct InstanceDetailView: View {
                 List {
                     ForEach($instance.filters) { $filter in
                         FilterRow(filter: $filter, onEdit: {
-                            showingEditFilter = filter.wrappedValue
+                            showingEditFilter = filter
                         })
                         .onChange(of: filter) { _ in
                             saveAndRestart()
