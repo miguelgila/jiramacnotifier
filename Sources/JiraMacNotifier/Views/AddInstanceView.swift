@@ -15,7 +15,7 @@ struct AddInstanceView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section(header: Text("Instance Details")) {
                     TextField("Name (e.g., Work Jira)", text: $name)
                     TextField("URL (e.g., https://your-domain.atlassian.net)", text: $url)
                         .autocapitalization(.none)
@@ -26,8 +26,6 @@ struct AddInstanceView: View {
                     Stepper("Poll Interval: \(pollIntervalMinutes) minutes",
                            value: $pollIntervalMinutes,
                            in: 1...60)
-                } header: {
-                    Text("Instance Details")
                 }
 
                 if let error = errorMessage {
@@ -93,7 +91,7 @@ struct AddFilterView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section(header: Text("Filter Details")) {
                     TextField("Name (e.g., My Open Issues)", text: $name)
 
                     VStack(alignment: .leading) {
@@ -108,8 +106,6 @@ struct AddFilterView: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                } header: {
-                    Text("Filter Details")
                 }
 
                 if let error = errorMessage {
