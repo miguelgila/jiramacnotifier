@@ -64,6 +64,11 @@ struct ContentView: View {
                     }
                 }
             }
+        } content: {
+            IssuesListView(
+                configManager: configManager,
+                pollingService: pollingService
+            )
         } detail: {
             if let instance = selectedInstance {
                 InstanceDetailView(
@@ -72,7 +77,7 @@ struct ContentView: View {
                     pollingService: pollingService
                 )
             } else {
-                Text("Select an instance")
+                Text("Select an instance to configure")
                     .foregroundColor(.secondary)
             }
         }

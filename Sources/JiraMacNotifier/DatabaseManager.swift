@@ -14,6 +14,7 @@ final class DatabaseManager: @unchecked Sendable {
     private let status = Expression<String>("status")
     private let updatedAt = Expression<Date>("updated_at")
     private let lastNotifiedAt = Expression<Date?>("last_notified_at")
+    private let isRead = Expression<Bool>("is_read")
 
     init() {
         setupDatabase()
@@ -44,6 +45,7 @@ final class DatabaseManager: @unchecked Sendable {
                 t.column(status)
                 t.column(updatedAt)
                 t.column(lastNotifiedAt)
+                t.column(isRead, defaultValue: false)
                 t.primaryKey(issueId, instanceId, filterId)
             })
 
@@ -68,7 +70,8 @@ final class DatabaseManager: @unchecked Sendable {
             summary <- state.summary,
             status <- state.status,
             updatedAt <- state.updatedAt,
-            lastNotifiedAt <- state.lastNotifiedAt
+            lastNotifiedAt <- state.lastNotifiedAt,
+            isRead <- state.isRead
         )
 
         try db.run(insert)
@@ -95,7 +98,8 @@ final class DatabaseManager: @unchecked Sendable {
             summary: row[self.summary],
             status: row[self.status],
             updatedAt: row[self.updatedAt],
-            lastNotifiedAt: row[self.lastNotifiedAt]
+            lastNotifiedAt: row[self.lastNotifiedAt],
+            isRead: row[self.isRead]
         )
     }
 
@@ -130,7 +134,7 @@ final class DatabaseManager: @unchecked Sendable {
 
         var states: [IssueState] = []
 
-        for row in try db.prepare(issueStates) {
+        for row in try db.prepare(issueStates.order(updatedAt.desc)) {
             let state = IssueState(
                 issueId: row[issueId],
                 issueKey: row[issueKey],
@@ -139,11 +143,37 @@ final class DatabaseManager: @unchecked Sendable {
                 summary: row[summary],
                 status: row[status],
                 updatedAt: row[updatedAt],
-                lastNotifiedAt: row[lastNotifiedAt]
+                lastNotifiedAt: row[lastNotifiedAt],
+                isRead: row[isRead]
             )
             states.append(state)
         }
 
         return states
+    }
+
+    func markAsRead(issueId: String, instanceId: UUID, filterId: UUID) throws {
+        guard let db = db else { return }
+
+        let query = issueStates.filter(
+            self.issueId == issueId &&
+            self.instanceId == instanceId.uuidString &&
+            self.filterId == filterId.uuidString
+        )
+
+        try db.run(query.update(isRead <- true))
+    }
+
+    func markMultipleAsRead(issueIds: [String]) throws {
+        guard let db = db else { return }
+
+        let query = issueStates.filter(issueIds.contains(issueId))
+        try db.run(query.update(isRead <- true))
+    }
+
+    func markAllAsRead() throws {
+        guard let db = db else { return }
+
+        try db.run(issueStates.update(isRead <- true))
     }
 }

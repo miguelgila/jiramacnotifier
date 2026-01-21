@@ -83,10 +83,46 @@ struct IssueState: Equatable, Sendable {
     let status: String
     let updatedAt: Date
     let lastNotifiedAt: Date?
+    var isRead: Bool
+
+    init(issueId: String, issueKey: String, instanceId: UUID, filterId: UUID, summary: String, status: String, updatedAt: Date, lastNotifiedAt: Date?, isRead: Bool = false) {
+        self.issueId = issueId
+        self.issueKey = issueKey
+        self.instanceId = instanceId
+        self.filterId = filterId
+        self.summary = summary
+        self.status = status
+        self.updatedAt = updatedAt
+        self.lastNotifiedAt = lastNotifiedAt
+        self.isRead = isRead
+    }
 
     var hasChanged: Bool {
         guard let lastNotified = lastNotifiedAt else { return true }
         return updatedAt > lastNotified
+    }
+}
+
+// MARK: - Issue Display Model
+
+struct IssueDisplayItem: Identifiable, Equatable, Sendable {
+    let id: String // issueId
+    let issueKey: String
+    let summary: String
+    let status: String
+    let priority: String?
+    let assignee: String?
+    let updatedAt: Date
+    let instanceId: UUID
+    let instanceName: String
+    let instanceUrl: String
+    let filterId: UUID
+    let filterName: String
+    let isRead: Bool
+    let isNew: Bool
+
+    var jiraUrl: String {
+        "\(instanceUrl)/browse/\(issueKey)"
     }
 }
 

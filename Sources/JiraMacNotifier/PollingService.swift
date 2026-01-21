@@ -32,7 +32,8 @@ final class PollingService: ObservableObject {
     func start() {
         guard !isRunning else { return }
         isRunning = true
-        logManager.log(.info, "Polling service started")
+        let enabledCount = configManager.instances.filter { $0.isEnabled }.count
+        logManager.log(.info, "Polling service started - monitoring \(enabledCount) enabled instance(s)")
         schedulePolling()
     }
 
@@ -40,7 +41,7 @@ final class PollingService: ObservableObject {
         timers.values.forEach { $0.invalidate() }
         timers.removeAll()
         isRunning = false
-        logManager.log(.info, "Polling service stopped")
+        logManager.log(.info, "Polling service stopped - all timers cancelled")
     }
 
     func restart() {
@@ -56,6 +57,13 @@ final class PollingService: ObservableObject {
         // Schedule timer for each enabled instance
         for instance in configManager.instances where instance.isEnabled {
             let interval = TimeInterval(instance.pollIntervalMinutes * 60)
+            let enabledFilters = instance.filters.filter { $0.isEnabled }.count
+
+            logManager.log(
+                .info,
+                "Scheduled polling for '\(instance.name)' every \(instance.pollIntervalMinutes) minutes (\(enabledFilters) active filter(s))",
+                instanceId: instance.id
+            )
 
             let timer = Timer.scheduledTimer(
                 withTimeInterval: interval,
@@ -151,7 +159,8 @@ final class PollingService: ObservableObject {
             summary: issue.fields.summary,
             status: issue.fields.status.name,
             updatedAt: updatedAt,
-            lastNotifiedAt: existingState?.lastNotifiedAt
+            lastNotifiedAt: existingState?.lastNotifiedAt,
+            isRead: existingState?.isRead ?? false
         )
 
         // Save the new state

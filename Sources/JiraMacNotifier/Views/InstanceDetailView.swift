@@ -7,6 +7,7 @@ struct InstanceDetailView: View {
 
     @State private var token: String = ""
     @State private var showingAddFilter = false
+    @State private var showingEditFilter: JiraFilter? = nil
     @State private var testConnectionStatus: String?
     @State private var isTesting = false
 
@@ -60,10 +61,12 @@ struct InstanceDetailView: View {
             Section(header: Text("Filters")) {
                 List {
                     ForEach($instance.filters) { $filter in
-                        FilterRow(filter: $filter)
-                            .onChange(of: filter) { _ in
-                                saveAndRestart()
-                            }
+                        FilterRow(filter: $filter, onEdit: {
+                            showingEditFilter = filter.wrappedValue
+                        })
+                        .onChange(of: filter) { _ in
+                            saveAndRestart()
+                        }
                     }
                     .onDelete(perform: deleteFilters)
                 }
@@ -82,6 +85,15 @@ struct InstanceDetailView: View {
         }
         .sheet(isPresented: $showingAddFilter) {
             AddFilterView(instance: $instance, configManager: configManager, pollingService: pollingService)
+        }
+        .sheet(item: $showingEditFilter) { filterToEdit in
+            if let filterIndex = instance.filters.firstIndex(where: { $0.id == filterToEdit.id }) {
+                EditFilterView(
+                    filter: $instance.filters[filterIndex],
+                    configManager: configManager,
+                    pollingService: pollingService
+                )
+            }
         }
     }
 
@@ -146,6 +158,7 @@ struct InstanceDetailView: View {
 
 struct FilterRow: View {
     @Binding var filter: JiraFilter
+    let onEdit: () -> Void
 
     var body: some View {
         HStack {
@@ -160,6 +173,15 @@ struct FilterRow: View {
                     .foregroundColor(.secondary)
                     .lineLimit(2)
             }
+
+            Spacer()
+
+            Button(action: onEdit) {
+                Image(systemName: "pencil")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Edit filter")
         }
     }
 }
